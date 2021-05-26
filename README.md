@@ -1,38 +1,67 @@
-# PolyBar_Autohide
+# No Man's Sky Rice - i3wm
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LZDKH4PL5Z3XN&source=url)
+![Screenshot](images/scm.png)
 
-Polybar is a beautiful bar but in some cases for example if you have a small screen it might take too much space so I've made a simple script that hide Polybar when there are windows in the current workspace, the script shows the bar if you move the cursor where the bar is or if you don't have any windows in the workspace that you're using.
+![Lockscreen](images/scl.png)
 
-## How to Install
-1. Clone the git repo in your home: 
-     ```
-     git clone https://github.com/arkeane/polybar_autohide.git ~/polybar_autohide
-     ```
-     - Install nedeed software: `polybar` `xdotool` `xdo`
+Power Menus:
 
-2. Move to the script directory `cd ~/polybar_autohide`
-     
-3. Make adjustments to the script
-     - You can adjust settings in the source code
+![PowerMenu 1](images/scpm1.png)
+![PowerMenu 2](images/scpm2.png)
 
-4. Compile the script `make`
+Dunst:
 
-5. Autostart the script
-     - Add the `autohide` file to your autostart system
-          - If you use i3wm add this to your config file, change $USER with your username:
-               ```
-               exec --no-startup-id /home/$USER/polybar_autohide/polybar-autohide
-               ```
-          - If not just use your usual autostart system.
+![Dunst](images/scdunst.png)
 
-## Changes made by taipan-snake
-- Removed hotkey support to avoid file I/O.
-- Added some delays for mouse movements and window presence
-- Tried to minimize calls to external calls by keeping more state in the script, to keep the script lightweight
+i3Blocks:
 
-## To Do
-- Dual monitor
-- Convert all the bash commands to C++
-- Multiple bars support
-- Hotkey functionality 
+![i3blocks](images/sci3blocks.png)
+
+----
+#### Pre-reqs:
+* [i3 gaps](https://github.com/Airblader/i3)...obviously
+* [i3blocks](https://github.com/vivien/i3blocks) and it's dependencies
+* [rofi](https://github.com/DaveDavenport/rofi) or [dmenu](https://wiki.archlinux.org/index.php/dmenu) which ever you prefer 
+* [ranger](https://github.com/ranger/ranger)
+* [feh](https://feh.finalrewind.org)
+* [w3m](https://www.archlinux.org/packages/extra/x86_64/w3m/) to preview images in ranger
+* [Python-PyWal](https://github.com/dylanaraps/pywal)
+* [Betterlockscreen](https://github.com/pavanjadhaw/betterlockscreen) and it's dependencies
+* [compton](https://wiki.archlinux.org/index.php/Compton) for smooth transitions
+* [polybar](https://github.com/jaagr/polybar) and it's dependencies if you plan to use that.
+* [CLI-Visualizer](https://github.com/dpayne/cli-visualizer)
+
+#### Terminal:
+* [gnome-terminal](https://aur.archlinux.org/packages/gnome-terminal-transparency/)
+* [zsh](https://wiki.archlinux.org/index.php/zsh)
+* [oh-myzsh](http://ohmyz.sh)
+* [powerlevel9k](https://github.com/bhilburn/powerlevel9k)
+
+#### Scripts:
+* [Spotify](https://github.com/firatakandere/i3blocks-spotify) 
+script for i3 blocks
+* [Weather](https://github.com/icemodding/i3/tree/master/scripts) 
+script for i3blocks
+* [Powermenu](https://github.com/vivien/i3blocks-contrib/tree/master/shutdown_menu) 
+which uses rofi or zenity
+* [Uptime](https://github.com/mohabaks/dotfiles/blob/master/config/polybar/.config/polybar/uptime)
+
+You don't need to download the scripts separately...just saying where I got 
+the scripts from. I've changed some stuff in the scripts, and I've kept the headers in the files if
+they had any so you can check out their work if you want.
+
+----
+#### Note:
+* Change $bat_number in .i3/scripts/battery accordingly
+* Shutdown menu/Powermenu won't work if you decided to use dmenu and not get rofi (unless you have zenity)
+
+#### Wallpaper:
+If that's all you need...
+
+![Wallpaper](.i3/bg1.jpg)
+
+...and if colors are all you need...
+
+* Verdigris: #52bbb7 (the one that looks kind of blue)
+* Darkterracotta: #ca4862 (the one that looks kind of pink)
+* #191919 (the dark background for various applications)
