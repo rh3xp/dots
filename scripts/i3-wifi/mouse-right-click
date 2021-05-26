@@ -1,0 +1,26 @@
+#!/bin/bash
+
+
+MESSAGE=$(nmcli general;echo;nmcli --fields NAME,TYPE,DEVICE,ACTIVE connection)
+let "WIDTH = $(wc -L <<< "$MESSAGE") + 3"
+
+ROFI_ARGS=(-dmenu -mesg "$MESSAGE" -eh 1 -width -$WIDTH)
+if ! [[ -z "$rofi_theme" ]]; then
+  ROFI_ARGS+=( -theme "$rofi_theme" )
+fi
+if ! [[ -z "$rofi_window_anchor" ]]; then
+  ROFI_ARGS+=( -m -3 -theme-str '#window {anchor:'"$rofi_window_anchor"';}' )
+fi
+
+[ "$(nmcli radio wifi)" == 'disabled' ] && WIFIOPT="turn wifi on" || WIFIOPT="turn wifi off"
+RESPONSE=$(rofi "${ROFI_ARGS[@]}" <<EOF
+$WIFIOPT
+open nm-connection-editor
+EOF
+)
+
+case "$RESPONSE" in
+	"turn wifi on" ) nmcli radio wifi on;;
+	"turn wifi off" ) nmcli radio wifi off;;
+	"open nm-connection-editor" ) nm-connection-editor;;
+esac

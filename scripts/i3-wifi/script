@@ -1,0 +1,74 @@
+#!/bin/bash
+# Copyright (C) 2019 Omar Castro <omar.castro.360@gmail.com>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#------------------------------------------------------------------------
+
+#set BLOCK_INSTANCE as interface or set the first wifi device found on nmcli
+INTERFACE="${BLOCK_INSTANCE:-$(nmcli -f "type,device" -t device | awk -F':' '$1 == "wifi" {print $2; exit}')}"
+#------------------------------------------------------------------------
+
+#if there is no wireless connection (e.g. desktop), this block should not be displayed.
+[[ -z "$INTERFACE" || ! -d /sys/class/net/${INTERFACE}/wireless ]] && exit
+
+
+handle_buttons(){
+  while read button; do
+    case "$button" in
+	    1) ( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null 2>&1 && setsid ./mouse-left-click ) > /dev/null  ;;
+	    3) ( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null 2>&1 && setsid ./mouse-right-click ) > /dev/null;;
+    esac
+  done
+}
+
+SHOW_SSID="${show_ssid:-false}"
+if [[ $SHOW_SSID = 'true' ]]; then
+	NMCLI_FIELDS="device,active,signal,ssid"
+	AWK_PRINT_PARAMS='{print $3"% "$4}'
+else
+	NMCLI_FIELDS="device,active,signal"
+	AWK_PRINT_PARAMS='{print $3"%"}'
+fi
+
+function printBlock(){
+	if [[ "$(nmcli radio wifi)" = 'disabled' ]]; then
+		echo "off"
+	elif [[ "$(cat /sys/class/net/$INTERFACE/operstate)" = 'down' ]]; then
+		echo "down"
+	else
+		nmcli -f "$NMCLI_FIELDS" -t device wifi list --rescan no | awk -F: '$1 == "'"$INTERFACE"'" && $2 == "yes" '"$AWK_PRINT_PARAMS"
+	fi
+}
+
+
+function displayInfo(){
+	CONNECTING=false
+	printBlock
+	while true; do
+		if IFS= read -t 5 -r line; then
+			case "$line" in
+				unavailable|connected|disconnected ) CONNECTING=false; printBlock;;
+				connecting* ) CONNECTING=true; echo "$line";;
+				* ) CONNECTING=false; echo "$line";;
+			esac
+		elif [ "$CONNECTING" = false ]; then
+			printBlock
+		fi
+	done < <(nmcli m | grep --line-buffered -oP "$INTERFACE: \K.*")
+
+}
+
+displayInfo &
+handle_buttons

@@ -1,0 +1,70 @@
+#!/bin/bash
+# Copyright (C) 2019 Omar Castro <omar.castro.360@gmail.com>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+ROFI_ARGS=()
+if ! [[ -z "${rofi_theme_left_click:-$rofi_theme}" ]]; then
+  ROFI_ARGS+=( -theme "${rofi_theme_left_click:-$rofi_theme}" )
+fi
+if ! [[ -z "$rofi_window_anchor" ]]; then
+  ROFI_ARGS+=( -m -3 -theme-str '#window {anchor:'"$rofi_window_anchor"';}' )
+fi
+
+if [[ "$(nmcli radio wifi)" = 'disabled' ]]; then
+    rofi -e "wifi is off" "${ROFI_ARGS[@]}" -width -20
+    exit 1;
+fi
+
+FILE="$(mktemp).fifo"
+mkfifo "$FILE"
+COLUMNS="IN-USE,SSID,CHAN,RATE,SIGNAL,SECURITY"
+WIFILIST="$(nmcli -f "$COLUMNS" -t device wifi list --rescan no)"
+ACTIVEWIFI=$(echo "$WIFILIST" | grep "^\*")
+OTHERWIFI=$(echo "$WIFILIST" | grep -v "^\*")
+CONTENT=$(echo "${COLUMNS//,/:}"$'\n'"$ACTIVEWIFI"$'\n'"$OTHERWIFI" | cut -d":" -f2- | sed 's/:/\\r:/1' | column -s":" -t | sed 's/\\r\s*/\r/')
+
+if [[ -z "$OTHERWIFI" ]]; then ROFI_ARGS+=( -async-pre-read 0 ); else ROFI_ARGS+=( -sync ); fi
+
+function execRofi(){
+    RESPONSE=$(rofi -dmenu -mesg "$(echo "$CONTENT" | head -n 1)" "${ROFI_ARGS[@]}" \
+     -markup-rows -eh 2 -lines 5 -width -50 \
+     -p "Filter Wifi" < $FILE)
+    if ! [[ -z "$RESPONSE" ]]; then
+      CHOOSEN_WIFI=$(echo "$RESPONSE" | cut -d$'\r' -f1,1 ) 
+      nmcli device wifi connect "$CHOOSEN_WIFI"
+    fi
+}
+
+execRofi &
+
+     
+if ! [[ -z "$ACTIVEWIFI" ]]; then
+  echo "$CONTENT" | tail +2 | sed -r -e '1s|([^ ]+)|<b>\1</b>|g' -e '1s/\r/\ (active\)\r/' >> "$FILE"
+else
+  echo "$CONTENT" | tail +2 >> "$FILE"
+fi
+
+if [[ -z "$OTHERWIFI" ]]; then
+    
+      nmcli -f "$COLUMNS" -t device wifi list --rescan yes \
+      | grep -v "^\*" \
+      | cut -d":" -f2- \
+      | sed 's/:/\\r:/2' \
+      | column -s":" -t \
+      | sed 's/\\r\s*/\r/' >> "$FILE"
+    
+  fi
+rm -f "$FILE"

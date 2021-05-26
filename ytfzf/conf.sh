@@ -1,0 +1,9 @@
+YTFZF_HIST=1
+YTFZF_NOTI=1
+YTFZF_EXTMENU="dmenu -i -b -l 15 -p Search:"
+YTFZF_PREF="22"
+YTFZF_PLAYER="mpv"
+YTFZF_AUDIO_PLAYER="mpv --no-video"
+YTFZF_LOOP=1
+is_ext_menu=1
+show_format=1
